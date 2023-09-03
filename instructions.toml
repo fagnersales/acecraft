@@ -1,0 +1,61 @@
+[[instruction]]
+name = "Go to Starting Position"
+allow_sneak = true
+rotate_before_walk = true
+look_downwards = true
+walk_to = [0.5, 1.0, 0.5]
+
+# Plowing
+
+[[instruction]]
+name = "Plow"
+allow_sneak = true
+rotate_before_walk = true
+look_downwards = true
+repeat_right_click = true
+walk_to = [10.5, 1.0, 0.5]
+
+[[instruction]]
+name = "Go to Next Position"
+allow_sneak = true
+rotate_before_walk = true
+look_downwards = true
+walk_to = [10.5, 1.0, 1.5]
+
+[[instruction]]
+name = "Plow"
+allow_sneak = true
+rotate_before_walk = true
+look_downwards = true
+repeat_right_click = true
+walk_to = [0.5, 1.0, 1.5]
+
+[[instruction]]
+name = "Go to Next Position"
+allow_sneak = true
+rotate_before_walk = true
+look_downwards = true
+walk_to = [0.5, 1.0, 4.5]
+
+[[instruction]]
+name = "Plow"
+allow_sneak = true
+rotate_before_walk = true
+look_downwards = true
+repeat_right_click = true
+walk_to = [10.5, 1.0, 4.5]
+
+[[instruction]]
+name = "Go to Next Position"
+allow_sneak = true
+rotate_before_walk = true
+look_downwards = true
+walk_to = [10.5, 1.0, 5.5]
+
+[[instruction]]
+name = "Plow"
+allow_sneak = true
+rotate_before_walk = true
+look_downwards = true
+repeat_right_click = true
+walk_to = [0.5, 1.0, 5.5]
