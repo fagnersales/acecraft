@@ -1,0 +1,3 @@
+O que isso significa?
+ctx.ping(b"");
+

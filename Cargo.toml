@@ -1,0 +1,22 @@
+[package]
+name = "acecraft"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[[bin]]
+path = "./src/client/main.rs"
+name = "client"
+
+[[bin]]
+path = "./src/server/main.rs"
+name = "server"
+
+[dependencies]
+actix = "0.13.1"
+actix-web = "4.4.0"
+actix-web-actors = "4.2.0"
+awc = "3.2.0"
+futures-util = { version = "0.3.28", features = ["std", "sink"] }
+rand = "0.8.5"
+tokio = { version = "1.32.0", features = ["full"] }
