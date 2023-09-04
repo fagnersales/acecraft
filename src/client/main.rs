@@ -24,7 +24,7 @@ use crate::{
     vectors::{CalculateAngleForce, Vector3D},
 };
 
-const TIMEOUT_SECONDS_DURATION: Duration = Duration::from_secs(50);
+const TIMEOUT_SECONDS_DURATION: Duration = Duration::from_secs(15);
 const TICKRATE_DURATION: Duration = Duration::from_millis(50);
 const WEBSOCKET_URL: &str = "ws://127.0.0.1:8080/ws";
 
@@ -112,7 +112,7 @@ async fn main() {
                                 ace_state.is_running = true;
                             }
 
-                            if instruction.allow_sneak && !ace_state.is_sneaking && distance < 3. {
+                            if instruction.allow_sneak && !ace_state.is_sneaking && distance < 2.5 {
                                 println!("Pressing Shift");
                                 enigo.key_down(Key::Shift);
                                 ace_state.is_sneaking = true;
@@ -135,13 +135,13 @@ async fn main() {
                         }
 
                         if instruction.allow_sneak {
-                            if ace_state.is_sneaking && distance > 3. {
+                            if ace_state.is_sneaking && distance > 2.5 {
                                 println!("Releasing Shift");
                                 enigo.key_up(Key::Shift);
                                 ace_state.is_sneaking = false;
                             }
 
-                            if !ace_state.is_sneaking && distance < 3. {
+                            if !ace_state.is_sneaking && distance < 2.5 {
                                 println!("Pressing Shift");
                                 enigo.key_down(Key::Shift);
                                 ace_state.is_sneaking = true;
@@ -155,14 +155,14 @@ async fn main() {
                         }
 
                         if !ace_state.hand_slot_changed {
-                            let ch = char::from_digit(instruction.change_hand_slot_to as u32, 10)
-                                .unwrap_or_default();
-                            enigo.key_click(Key::Layout(ch));
+                            enigo.key_click(Key::Layout(instruction.change_hand_slot_to));
+                            ace_state.hand_slot_changed = true;
                         }
                     }
 
                     Message::InstructionFinished => {
                         println!("Releasing All (Instruction Finished)");
+                        ace_state.hand_slot_changed = false;
 
                         if ace_state.is_walking {
                             println!("Releasing W (Instruction Finished)");

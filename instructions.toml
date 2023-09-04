@@ -1,61 +1,54 @@
-[[instruction]]
-name = "Go to Starting Position"
+[default]
 allow_sneak = true
 rotate_before_walk = true
 look_downwards = true
-walk_to = [0.5, 1.0, 0.5]
-
-# Plowing
+repeat_right_click = false
 
 [[instruction]]
-name = "Plow"
-allow_sneak = true
-rotate_before_walk = true
-look_downwards = true
-repeat_right_click = true
-walk_to = [10.5, 1.0, 0.5]
+name = "Plow Terrain"
+change_hand_slot_to = "5"
+
+path = [
+  { action = "walking", to = [0.5, 1.0, 0.5] },
+  { action = "right_clicking", to = [10.5, 1.0, 0.5] },
+  { action = "walking", to = [10.5, 1.0, 1.5] },
+  { action = "right_clicking", to = [0.5, 1.0, 1.5] },
+
+  # SKIP 2 BLOCKS TO NEXT POSTION
+  { action = "walking", to = [0.5, 1.0, 4.5] },
+
+  { action = "right_clicking", to = [10.5, 1.0, 4.5] },
+  { action = "walking", to = [10.5, 1.0, 5.5] },
+  { action = "right_clicking", to = [0.5, 1.0, 5.5] },
+
+  # SKIP 2 BLOCKS TO NEXT POSTION
+  { action = "walking", to = [0.5, 1.0, 8.5] },
+  { action = "right_clicking", to = [10.5, 1.0, 8.5] },
+  { action = "walking", to = [10.5, 1.0, 9.5] },
+  { action = "right_clicking", to = [0.5, 1.0, 9.5] },
+]
 
 [[instruction]]
-name = "Go to Next Position"
-allow_sneak = true
-rotate_before_walk = true
-look_downwards = true
-walk_to = [10.5, 1.0, 1.5]
+name = "Plant Terrain"
+change_hand_slot_to = "9"
+reverse = true
 
-[[instruction]]
-name = "Plow"
-allow_sneak = true
-rotate_before_walk = true
-look_downwards = true
-repeat_right_click = true
-walk_to = [0.5, 1.0, 1.5]
+path = [
+  { action = "walking", to = [0.5, 1.0, 0.5] },
+  { action = "right_clicking", to = [10.5, 1.0, 0.5] },
+  { action = "walking", to = [10.5, 1.0, 1.5] },
+  { action = "right_clicking", to = [0.5, 1.0, 1.5] },
 
-[[instruction]]
-name = "Go to Next Position"
-allow_sneak = true
-rotate_before_walk = true
-look_downwards = true
-walk_to = [0.5, 1.0, 4.5]
+  # # SKIP 2 BLOCKS TO NEXT POSTION
+  { action = "walking", to = [0.5, 1.0, 4.5] },
 
-[[instruction]]
-name = "Plow"
-allow_sneak = true
-rotate_before_walk = true
-look_downwards = true
-repeat_right_click = true
-walk_to = [10.5, 1.0, 4.5]
+  { action = "right_clicking", to = [10.5, 1.0, 4.5] },
+  { action = "walking", to = [10.5, 1.0, 5.5] },
+  { action = "right_clicking", to = [0.5, 1.0, 5.5] },
 
-[[instruction]]
-name = "Go to Next Position"
-allow_sneak = true
-rotate_before_walk = true
-look_downwards = true
-walk_to = [10.5, 1.0, 5.5]
-
-[[instruction]]
-name = "Plow"
-allow_sneak = true
-rotate_before_walk = true
-look_downwards = true
-repeat_right_click = true
-walk_to = [0.5, 1.0, 5.5]
+  # SKIP 2 BLOCKS TO NEXT POSTION
+  { action = "walking", to = [0.5, 1.0, 8.5] },
+  { action = "right_clicking", to = [10.5, 1.0, 8.5] },
+  { action = "walking", to = [10.5, 1.0, 9.5] },
+  { action = "right_clicking", to = [0.5, 1.0, 9.5] },
+]
