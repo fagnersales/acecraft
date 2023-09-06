@@ -5,8 +5,12 @@ pub struct AceState {
     pub is_walking: bool,
     pub is_running: bool,
     pub is_sneaking: bool,
+    pub is_turning: bool,
+
+    pub is_pressing_right_click: bool,
 
     pub hand_slot_changed: bool,
+    pub hand_stack_reseted: bool,
 }
 
 impl AceState {
@@ -18,8 +22,12 @@ impl AceState {
             is_walking: false,
             is_running: false,
             is_sneaking: false,
+            is_turning: false,
+
+            is_pressing_right_click: false,
 
             hand_slot_changed: false,
+            hand_stack_reseted: false,
         }
     }
 }

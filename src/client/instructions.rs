@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use toml::{map::Map, Value};
 
 #[derive(Debug, Clone)]
@@ -11,6 +13,16 @@ impl From<[f64; 3]> for Walk {
     }
 }
 
+impl Display for Walk {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{{ X: {}, Y: {}, Z: {} }}",
+            self.to[0], self.to[1], self.to[2]
+        )
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Instruction {
     pub name: String,
@@ -21,6 +33,17 @@ pub struct Instruction {
     pub look_downwards: bool,
     pub repeat_right_click: bool,
     pub change_hand_slot_to: char,
+    pub reset_hand_stack: bool,
+}
+
+impl Display for Instruction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Instruction '{}' is going to {} | Right Clicking: {} ({})",
+            self.name, self.walk, self.repeat_right_click, self.change_hand_slot_to
+        )
+    }
 }
 
 struct InstructionDefaults {
@@ -30,6 +53,14 @@ struct InstructionDefaults {
     pub look_downwards: bool,
     pub repeat_right_click: bool,
     pub change_hand_slot_to: char,
+    pub reset_hand_stack: bool,
+}
+
+fn get_reset_hand_stack(table: &Map<String, Value>, default: Option<bool>) -> bool {
+    table
+        .get("reset_hand_stack")
+        .and_then(|item| item.as_bool())
+        .unwrap_or(default.unwrap_or(false))
 }
 
 fn get_allow_run(table: &Map<String, Value>, default: Option<bool>) -> bool {
@@ -123,6 +154,7 @@ pub fn list_instructions() -> Vec<Instruction> {
                 rotate_before_walk: get_rotate_before_walk(table, None),
                 change_hand_slot_to: get_change_hand_slot_to(table, None),
                 repeat_right_click: get_repeat_right_click(table, None),
+                reset_hand_stack: get_reset_hand_stack(table, None),
             }
             .into()
         })
@@ -150,12 +182,15 @@ pub fn list_instructions() -> Vec<Instruction> {
             let repeat_right_click =
                 get_repeat_right_click(table, defaults.repeat_right_click.into());
 
+            let reset_hand_stack = get_reset_hand_stack(table, defaults.reset_hand_stack.into());
+
             let coords_to_instruction = |coords: [f64; 3]| Instruction {
                 allow_run: defaults.allow_run,
                 allow_sneak: defaults.allow_sneak,
                 change_hand_slot_to: change_hand_slot,
                 look_downwards: defaults.look_downwards,
                 rotate_before_walk: defaults.rotate_before_walk,
+                reset_hand_stack,
                 repeat_right_click,
                 name: name.to_string(),
                 walk: Walk::from(coords),
@@ -177,6 +212,10 @@ pub fn list_instructions() -> Vec<Instruction> {
 
                         instruction.repeat_right_click = (action == "right_clicking" && !reverse)
                             || (action == "walking" && reverse);
+                        instruction.reset_hand_stack = (action == "right_clicking" && !reverse)
+                            || (action == "walking" && reverse);
+
+                        println!("{instruction}");
 
                         instruction
                     })

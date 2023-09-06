@@ -1,4 +1,5 @@
 mod ace_state;
+mod actions;
 mod instructions;
 mod minecraft_resource;
 mod vectors;
@@ -6,6 +7,7 @@ mod vectors;
 use std::{sync::Arc, time::Duration};
 
 use ace_state::AceState;
+use actions::try_action;
 use actix_web::web::Bytes;
 use awc::ws;
 use enigo::*;
@@ -24,9 +26,13 @@ use crate::{
     vectors::{CalculateAngleForce, Vector3D},
 };
 
-const TIMEOUT_SECONDS_DURATION: Duration = Duration::from_secs(15);
-const TICKRATE_DURATION: Duration = Duration::from_millis(50);
+const TIMEOUT_SECONDS_DURATION: Duration = Duration::from_secs(20000);
+const TICKRATE_DURATION: Duration = Duration::from_millis(60);
 const WEBSOCKET_URL: &str = "ws://127.0.0.1:8080/ws";
+
+const SNEAK_END_AT: f64 = 3.0;
+const WALK_START_AT: f64 = 0.2;
+const RUN_START_AT: f64 = 5.0;
 
 #[derive(Debug, Clone)]
 enum Message {
@@ -37,7 +43,6 @@ enum Message {
     },
     Walk {
         distance: f64,
-        head_movement_force: (i32, i32),
         instruction: Instruction,
     },
     Hand {
@@ -86,106 +91,98 @@ async fn main() {
                         vertical_force,
                     } => {
                         enigo.mouse_move_relative(horizontal_force * -1, vertical_force * -1);
+                        ace_state.is_turning = horizontal_force != 0 || vertical_force != 0;
                     }
 
                     Message::Walk {
                         distance,
                         instruction,
-                        head_movement_force,
                     } => {
-                        if instruction.rotate_before_walk
-                            && (head_movement_force.0 != 0 || head_movement_force.1 != 0)
-                        {
+                        if instruction.rotate_before_walk && ace_state.is_turning {
+                            try_action::stop::walk(&mut ace_state, &mut enigo);
+                            try_action::stop::sneak(&mut ace_state, &mut enigo);
+                            try_action::stop::run(&mut ace_state, &mut enigo, TICKRATE_DURATION)
+                                .await;
                             continue;
                         }
 
-                        if distance < 0.2 && ace_state.is_walking {
-                            println!("Releasing W");
-                            enigo.key_up(Key::W);
-                            ace_state.is_walking = false;
+                        if ace_state.is_walking {
+                            if distance < WALK_START_AT {
+                                try_action::stop::walk(&mut ace_state, &mut enigo);
+                            }
+                        } else {
+                            try_action::walk(&mut ace_state, &mut enigo);
                         }
 
-                        if distance > 0.2 && !ace_state.is_walking {
-                            if instruction.allow_run && !ace_state.is_running && distance > 5. {
-                                println!("Pressing Control");
-                                enigo.key_down(Key::Control);
-                                ace_state.is_running = true;
+                        if instruction.allow_run {
+                            if distance < RUN_START_AT {
+                                try_action::stop::run(
+                                    &mut ace_state,
+                                    &mut enigo,
+                                    TICKRATE_DURATION,
+                                )
+                                .await;
+                            } else {
+                                try_action::run(&mut ace_state, &mut enigo);
                             }
-
-                            if instruction.allow_sneak && !ace_state.is_sneaking && distance < 2.5 {
-                                println!("Pressing Shift");
-                                enigo.key_down(Key::Shift);
-                                ace_state.is_sneaking = true;
-                            }
-
-                            println!("Pressing W");
-                            enigo.key_down(Key::W);
-                            ace_state.is_walking = true;
-                        }
-
-                        if instruction.allow_run && ace_state.is_running && distance < 5. {
-                            println!("Releasing Control");
-                            enigo.key_up(Key::Control);
-                            println!("Repressing W");
-                            enigo.key_up(Key::W);
-                            sleep(TICKRATE_DURATION).await;
-                            enigo.key_down(Key::W);
-                            sleep(TICKRATE_DURATION).await;
-                            ace_state.is_running = false;
                         }
 
                         if instruction.allow_sneak {
-                            if ace_state.is_sneaking && distance > 2.5 {
-                                println!("Releasing Shift");
-                                enigo.key_up(Key::Shift);
-                                ace_state.is_sneaking = false;
-                            }
-
-                            if !ace_state.is_sneaking && distance < 2.5 {
-                                println!("Pressing Shift");
-                                enigo.key_down(Key::Shift);
-                                ace_state.is_sneaking = true;
+                            if distance > SNEAK_END_AT {
+                                try_action::stop::sneak(&mut ace_state, &mut enigo);
+                            } else {
+                                try_action::sneak(&mut ace_state, &mut enigo);
                             }
                         }
                     }
 
                     Message::Hand { instruction } => {
-                        if instruction.repeat_right_click {
-                            enigo.mouse_click(MouseButton::Right);
-                        }
-
                         if !ace_state.hand_slot_changed {
+                            println!("Changing Hand Slot");
                             enigo.key_click(Key::Layout(instruction.change_hand_slot_to));
                             ace_state.hand_slot_changed = true;
+                        }
+
+                        if instruction.reset_hand_stack {
+                            try_action::reset_hand_stack(
+                                &mut ace_state,
+                                &mut enigo,
+                                TICKRATE_DURATION,
+                            )
+                            .await;
+                        }
+
+                        if instruction.repeat_right_click {
+                            if !ace_state.is_pressing_right_click {
+                                println!("Pressing Mouse Right Button");
+                                enigo.mouse_down(MouseButton::Right);
+                                ace_state.is_pressing_right_click = true;
+                            }
                         }
                     }
 
                     Message::InstructionFinished => {
                         println!("Releasing All (Instruction Finished)");
                         ace_state.hand_slot_changed = false;
+                        ace_state.hand_stack_reseted = false;
 
                         if ace_state.is_walking {
-                            println!("Releasing W (Instruction Finished)");
-                            enigo.key_up(Key::W);
-                            ace_state.is_walking = false;
+                            try_action::stop::walk(&mut ace_state, &mut enigo);
                         }
 
                         if ace_state.is_running {
-                            println!("Releasing Control (Instruction Finished)");
-                            enigo.key_up(Key::Control);
-                            println!("Repressing W");
-                            enigo.key_up(Key::W);
-                            sleep(TICKRATE_DURATION).await;
-                            enigo.key_down(Key::W);
-                            sleep(TICKRATE_DURATION).await;
-                            ace_state.is_running = false;
+                            try_action::stop::run(&mut ace_state, &mut enigo, TICKRATE_DURATION)
+                                .await;
                         }
 
                         if ace_state.is_sneaking {
-                            println!("Releasing Shift (Instruction Finished)");
-                            enigo.key_up(Key::Shift);
-                            ace_state.is_sneaking = false;
+                            try_action::stop::sneak(&mut ace_state, &mut enigo);
                         }
+
+                        if ace_state.is_pressing_right_click {
+                            enigo.mouse_up(MouseButton::Right);
+                            ace_state.is_pressing_right_click = false;
+                        };
                     }
                 }
             }
@@ -228,7 +225,6 @@ async fn main() {
                 tx.send(Message::Walk {
                     distance,
                     instruction: instruction.clone(),
-                    head_movement_force: (horizontal_force, vertical_force),
                 })
                 .unwrap();
 
