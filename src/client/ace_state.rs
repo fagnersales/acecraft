@@ -1,33 +1,29 @@
+use std::{time::Instant, sync::Arc};
+use futures_util::lock::Mutex;
 pub struct AceState {
-    pub allow_run: bool,
-    pub allow_sneak: bool,
-
-    pub is_walking: bool,
-    pub is_running: bool,
-    pub is_sneaking: bool,
+    pub last_flight: Instant,
     pub is_turning: bool,
+    pub is_moving: bool,
+
+    pub last_space_press: Instant,
+    pub last_shift_press: Instant,
 
     pub is_pressing_right_click: bool,
-
-    pub hand_slot_changed: bool,
     pub hand_stack_reseted: bool,
 }
 
 impl AceState {
-    pub fn new() -> Self {
-        Self {
-            allow_run: false,
-            allow_sneak: false,
+    pub fn new_shared() -> Arc<Mutex<AceState>> {
+        Arc::new(Mutex::new(Self {
+            last_flight: Instant::now(),
+            last_space_press: Instant::now(),
+            last_shift_press: Instant::now(),
 
-            is_walking: false,
-            is_running: false,
-            is_sneaking: false,
             is_turning: false,
+            is_moving: false,
 
             is_pressing_right_click: false,
-
-            hand_slot_changed: false,
             hand_stack_reseted: false,
-        }
+        }))
     }
 }

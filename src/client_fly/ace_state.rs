@@ -1,4 +1,6 @@
-use std::time::Instant;
+use std::{sync::Arc, time::Instant};
+
+use futures_util::lock::Mutex;
 
 pub struct AceState {
     pub last_flight: Instant,
@@ -13,8 +15,8 @@ pub struct AceState {
 }
 
 impl AceState {
-    pub fn new() -> Self {
-        Self {
+    pub fn new_shared() -> Arc<Mutex<AceState>> {
+        Arc::new(Mutex::new(Self {
             last_flight: Instant::now(),
             last_space_press: Instant::now(),
             last_shift_press: Instant::now(),
@@ -24,6 +26,6 @@ impl AceState {
 
             is_pressing_right_click: false,
             hand_stack_reseted: false,
-        }
+        }))
     }
 }

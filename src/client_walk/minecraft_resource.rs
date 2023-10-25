@@ -1,6 +1,4 @@
-use futures_util::lock::Mutex;
 use serde::{Deserialize, Serialize};
-use std::sync::Arc;
 
 #[derive(Debug, Clone, Copy, Deserialize, Serialize)]
 pub struct PlayerPosition {
@@ -33,14 +31,14 @@ pub struct MinecraftResource {
 }
 
 impl MinecraftResource {
-    pub fn new_shared() -> Arc<Mutex<MinecraftResource>> {
-        Arc::new(Mutex::new(Self {
+    pub fn new() -> Self {
+        Self {
             player_position: PlayerPosition {
                 x: 0.,
                 y: 0.,
                 z: 0.,
             },
             player_head: PlayerHead { yaw: 0., y: 0. },
-        }))
+        }
     }
 }

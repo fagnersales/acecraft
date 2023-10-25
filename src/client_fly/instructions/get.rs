@@ -67,6 +67,17 @@ pub fn looking(table: &Map<String, Value>) -> Option<Looking> {
 pub fn to(table: &Map<String, Value>) -> [f64; 3] {
     table
         .get("to")
-        .and_then(|coords| parse::to_coords(coords).into())
+        .and_then(|coords| {
+            let coords = coords
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|coord| coord.as_float().unwrap())
+                .collect::<Vec<f64>>();
+
+            assert_eq!(coords.len(), 3);
+
+            Some([coords[0], coords[1], coords[2]])
+        })
         .unwrap()
 }

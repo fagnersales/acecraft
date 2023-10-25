@@ -28,7 +28,7 @@ use crate::{
     vectors::{CalculateAngleForce, Vector3D},
 };
 
-const TIMEOUT_SECONDS_DURATION: Duration = Duration::from_secs(1200);
+const TIMEOUT_DURATION: Duration = Duration::from_secs(1200);
 const TICKRATE_DURATION: Duration = Duration::from_millis(60);
 const WEBSOCKET_URL: &str = "ws://127.0.0.1:8080/ws";
 const DISTANCE_TO_FINISH_INSTRUCTION: f64 = 0.3;
@@ -65,7 +65,7 @@ async fn main() {
         .await
         .unwrap();
 
-    let ace_state = Arc::new(Mutex::new(AceState::new()));
+    let ace_state = AceState::new_shared();
     let enigo = Arc::new(Mutex::new(Enigo::new()));
     let minecraft_resource = Arc::new(Mutex::new(MinecraftResource::new()));
 
@@ -168,11 +168,11 @@ async fn main() {
                             let (delay_to_release, delay_to_fresh, key) = match instruction.looking
                             {
                                 Looking::Back => {
-                                  if distance < 3.0 {
-                                    (TICKRATE_DURATION * 3, TICKRATE_DURATION * 10, Key::S)
-                                  } else {
-                                    (TICKRATE_DURATION * 5, TICKRATE_DURATION * 10, Key::S)
-                                  }
+                                    if distance < 3.0 {
+                                        (TICKRATE_DURATION * 3, TICKRATE_DURATION * 10, Key::S)
+                                    } else {
+                                        (TICKRATE_DURATION * 5, TICKRATE_DURATION * 10, Key::S)
+                                    }
                                 }
                                 Looking::Direction(_) => {
                                     (TICKRATE_DURATION * 3, TICKRATE_DURATION * 12, Key::A)
@@ -346,14 +346,14 @@ async fn main() {
                 }
               },
 
-              _ = sleep(TIMEOUT_SECONDS_DURATION) => {
+              _ = sleep(TIMEOUT_DURATION) => {
                 break;
               }
             }
         }
     };
 
-    if let Err(_) = timeout(TIMEOUT_SECONDS_DURATION, main_task).await {
+    if let Err(_) = timeout(TIMEOUT_DURATION, main_task).await {
         println!("Terminated after timeout.");
     }
 }

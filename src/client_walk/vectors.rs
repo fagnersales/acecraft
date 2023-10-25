@@ -2,7 +2,6 @@ use crate::minecraft_resource::PlayerPosition;
 
 use std::ops::Sub;
 
-#[derive(Clone)]
 pub struct Vector3D {
     pub x: f64,
     pub y: f64,
@@ -84,23 +83,7 @@ impl Vector3D {
     }
 
     pub fn distance_to(&self, other: &Vector3D) -> f64 {
-        let me = Vector3D {
-            x: self.x,
-            y: 0.,
-            z: self.z,
-        };
-
-        let other = Vector3D {
-            x: other.x,
-            y: 0.,
-            z: other.z,
-        };
-
-        (me - other).magnitude()
-    }
-
-    pub fn y_distance_to(&self, other: &Vector3D) -> f64 {
-        self.y - other.y
+        (self - other).magnitude()
     }
 
     pub fn horizontal_angle_distance_to(&self, goal: &Vector3D, yaw: f64) -> f64 {

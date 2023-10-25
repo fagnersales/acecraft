@@ -9,6 +9,10 @@ path = "./src/client/main.rs"
 name = "client"
 
 [[bin]]
+path = "./src/client_walk/main.rs"
+name = "client_walk"
+
+[[bin]]
 path = "./src/client_fly/main.rs"
 name = "client_fly"
 
